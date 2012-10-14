@@ -6,91 +6,86 @@ int CLOSE_SWITCH = 8;
 int OPEN_SWITCH = 9;
 
 void setup() {
-  pinMode(FWD, OUTPUT);
-  pinMode(REV, OUTPUT);
-  pinMode(CLOSE_SWITCH, INPUT);
-  pinMode(OPEN_SWITCH, INPUT);
-  Serial.begin(9600);
+  pinMode( FWD, OUTPUT);
+  pinMode( REV, OUTPUT);
+  pinMode( CLOSE_SWITCH, INPUT);
+  pinMode( OPEN_SWITCH, INPUT);
+  Serial.begin( 9600);
   stopMotor();
   openDoor();
 }
 
-//void loop() {
-  //openDoor();
-  //delay(1000);
-//}
-
-
-
 void loop() {
   static int daylight=true;
-  if (daylight) {
+  if ( daylight) {
     daylight = checkDaylight();
-    if (!daylight) {
+    if ( !daylight) { // switch from daylight to !daylight
       closeDoor();
     }
   } else {
     daylight = checkDaylight();
-    if (daylight) {
+    if ( daylight) { // switch from !daylight to daylight
       openDoor();
     }
   }
-  delay(1000);
+  delay( 1000); // wait a second before checking again
 }
 
 int checkOpen() {
-  return digitalRead(OPEN_SWITCH);
+  return digitalRead( OPEN_SWITCH);
 }
 
 int checkClosed(){
-  return digitalRead(CLOSE_SWITCH);
+  return digitalRead( CLOSE_SWITCH);
 }
 
 int checkDaylight() {
-  int light = analogRead(LIGHT);
-  if (light>300) {
-    return true;
+  int light = analogRead( LIGHT);
+  if ( light > 300) {
+    return true;  // light level above 300 ==> daylight
   } else {
-    return false;
+    return false; // light level below/equal 300  ==> night
   }
 }
 
-void stopMotor() {
-  Serial.println("stopMotor");
-  digitalWrite(FWD,LOW);
-  digitalWrite(REV,LOW);
+void stopMotor() { // set hbridge stop
+  Serial.println( "stopMotor");
+  digitalWrite( FWD,LOW);
+  digitalWrite( REV,LOW);
 }
 
 void closeDoor() {
-  Serial.println("closeDoor");
-  int doorClosed = checkClosed();
+  Serial.println( "closeDoor");
 
-  if (!doorClosed) motorForward();
+  int doorClosed = checkClosed();
+  if ( !doorClosed) motorForward(); // if not closed run motor forward
   
-  while(!doorClosed) {
-    doorClosed = checkClosed();
+  while( !doorClosed) {
+    doorClosed = checkClosed();  // keep checking closed status
   }
-  stopMotor();
+
+  stopMotor(); // stop motor after close status detected
 }
 
 void openDoor() {
+  Serial.println( "openDoor");
+  
   int doorOpen = checkOpen();
-  Serial.println("openDoor");
+  if ( !doorOpen) motorReverse(); // if not open run motor backward
   
-  if (!doorOpen) motorReverse();
-  
-  while(!doorOpen) {
-    doorOpen = checkOpen();
+  while( !doorOpen) {
+    doorOpen = checkOpen(); // keep checking open status
   }
-  stopMotor();
+
+  stopMotor(); // stop motor after open status detected
 }
 
-void motorReverse() {
-  digitalWrite(FWD,LOW);
-  digitalWrite(REV,HIGH);
+void motorReverse() { // set hbridge reverse
+  digitalWrite( FWD,LOW);
+  digitalWrite( REV,HIGH);
 }
 
-void motorForward() {
-  digitalWrite(FWD,HIGH);
-  digitalWrite(REV,LOW);
+void motorForward() { // set hbridge forward
+  digitalWrite( FWD,HIGH);
+  digitalWrite( REV,LOW);
 }
